@@ -7,6 +7,13 @@ import { AgentExecutor, createToolCallingAgent } from "@langchain/core/agents";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 
+// Gemini model
+const model = new ChatGoogleGenerativeAI({
+  model: "gemini-1.5-flash",
+  temperature: 0.5,
+  apiKey: process.env.GOOGLE_API_KEY,
+});
+
 const app = express();
 
 //middleware
