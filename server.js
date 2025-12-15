@@ -1,12 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// LangChain v1 imports
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { AgentExecutor, createToolCallingAgent } from "@langchain/core/agents";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
+
+dotenv.config();
+
+const app = express();
+app.use(express.json());
+
+// 🔑 __dirname fix for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Gemini model
 const model = new ChatGoogleGenerativeAI({
@@ -15,59 +23,42 @@ const model = new ChatGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Tool
+// Tool (same as YouTube)
 const getMenuTool = new DynamicStructuredTool({
-  name: "getMenuTool",
-  description:
-    "Returns the final answer for today's menu for the given category (breakfast, lunch, or dinner). Use this tool to directly answer the user's menu question.",
+  name: "get_menu",
+  description: "Returns today's menu for breakfast, lunch, or dinner",
   schema: z.object({
-    category: z
-      .string()
-      .describe("Type of food. Example: breakfast, lunch, dinner"),
+    category: z.string(),
   }),
   func: async ({ category }) => {
     const menus = {
-      breakfast: "Allo paratha, Poha, Masala Chai",
+      breakfast: "Aloo Paratha, Poha, Masala Chai",
       lunch: "Paneer Butter Masala, Dal Fry, Jeera Rice, Roti",
-      dinner: "Veg Biryani, raita, Salad, Gulab jamun",
+      dinner: "Veg Biryani, Raita, Salad, Gulab Jamun",
     };
-    return menus[category.toLowerCase()] || "No menu found for that category.";
+    return menus[category.toLowerCase()] || "No menu found";
   },
 });
 
-//prompt
-const prompt = ChatPromptTemplate.fromMessages([
-  ["system", "you are a helpful assistant that uses tools when needed."],
-  ["human", "{input}"],
-  ["ai", "{agent_scratchpad}"],
-]);
+// 🔥 Agent equivalent (Gemini tool calling)
+const agent = model.bindTools([getMenuTool]);
 
-// Agent
-const agent = await createToolCallingAgent({
-  llm: model,
-  tools: [getMenuTool],
-  prompt,
-});
-
-// Executor
-const executor = await AgentExecutor.fromAgentTools({
-  agent,
-  tools: [getMenuTool],
-});
-
-const app = express();
-
-//middleware
-app.use(express.json());
-
-//test route
+// ✅ GET route (HTML serve) — SAME AS YOUTUBE
 app.get("/", (req, res) => {
-  return res.send("server running successfull..");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-//port
+// POST route (chat)
+app.post("/chat", async (req, res) => {
+  const { message } = req.body;
+  const result = await agent.invoke(message);
+
+  res.json({
+    reply: result.content,
+  });
+});
+
 const PORT = process.env.PORT || 3000;
-//server start
 app.listen(PORT, () =>
-  console.log(`server is running on https://localhost:${PORT}`)
+  console.log(`Server running on http://localhost:${PORT}`)
 );

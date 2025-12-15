@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Restaurant Agent</title>
+  </head>
+  <body>
+    <h1>🍽️ Restaurant AI Agent</h1>
+
+    <input id="msg" placeholder="Ask menu..." />
+    <button onclick="send()">Send</button>
+
+    <p id="out"></p>
+
+    <script>
+      async function send() {
+        const message = document.getElementById("msg").value;
+
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await res.json();
+        document.getElementById("out").innerText = data.reply;
+      }
+    </script>
+  </body>
+</html>
