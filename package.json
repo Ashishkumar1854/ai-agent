@@ -11,10 +11,8 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@langchain/core": "^1.1.5",
-    "@langchain/google-genai": "^2.1.0",
-    "@langchain/langgraph": "^1.0.4",
-    "dotenv": "^16.4.5",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.6.1",
     "express": "^4.22.1"
   }
 }

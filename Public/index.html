@@ -1,19 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
     <title>Restaurant AI Assistant</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: Arial;
         max-width: 600px;
-        margin: 40px auto;
+        margin: 20px auto;
       }
       #chat {
-        white-space: pre-wrap;
-        margin-top: 20px;
         border: 1px solid #ccc;
         padding: 10px;
+        min-height: 200px;
+      }
+      .user {
+        color: blue;
+        margin: 5px 0;
+      }
+      .bot {
+        color: green;
+        margin: 5px 0;
       }
     </style>
   </head>
@@ -22,25 +28,31 @@
 
     <input
       id="userInput"
-      placeholder="Ask: what's for dinner?"
-      style="width: 100%; padding: 8px"
+      placeholder="Ask: what's for breakfast?"
+      style="width: 100%"
     />
-    <button onclick="sendMessage()">Send</button>
+    <button onclick="send()">Send</button>
 
     <div id="chat"></div>
 
     <script>
-      async function sendMessage() {
-        const input = document.getElementById("userInput").value;
+      async function send() {
+        const input = document.getElementById("userInput");
+        const chat = document.getElementById("chat");
+        const message = input.value;
+        if (!message) return;
+
+        chat.innerHTML += `<div class="user">👤 ${message}</div>`;
+        input.value = "";
 
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: input }),
+          body: JSON.stringify({ message }),
         });
 
         const data = await res.json();
-        document.getElementById("chat").innerText = data.reply;
+        chat.innerHTML += `<div class="bot">🤖 ${data.reply}</div>`;
       }
     </script>
   </body>
