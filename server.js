@@ -12,18 +12,22 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// 🔑 __dirname fix for ES modules
+// fix __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Gemini model
+/* ===============================
+   1️⃣ MODEL (Gemini)
+================================ */
 const model = new ChatGoogleGenerativeAI({
   model: "gemini-1.5-flash",
   temperature: 0.5,
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Tool (same as YouTube)
+/* ===============================
+   2️⃣ TOOL (getMenuTool)
+================================ */
 const getMenuTool = new DynamicStructuredTool({
   name: "get_menu",
   description: "Returns today's menu for breakfast, lunch, or dinner",
@@ -40,25 +44,41 @@ const getMenuTool = new DynamicStructuredTool({
   },
 });
 
-// 🔥 Agent equivalent (Gemini tool calling)
+/* ===============================
+   3️⃣ AGENT (THIS IS THE KEY 🔥)
+   (YouTube equivalent)
+================================ */
 const agent = model.bindTools([getMenuTool]);
 
-// ✅ GET route (HTML serve) — SAME AS YOUTUBE
+/* ===============================
+   4️⃣ GET ROUTE – Serve HTML
+================================ */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// POST route (chat)
-app.post("/chat", async (req, res) => {
-  const { message } = req.body;
-  const result = await agent.invoke(message);
+/* ===============================
+   5️⃣ POST ROUTE – CHAT
+================================ */
+app.post("/api/chat", async (req, res) => {
+  try {
+    const userInput = req.body.message;
 
-  res.json({
-    reply: result.content,
-  });
+    const response = await agent.invoke(userInput);
+
+    res.json({
+      reply: response.content,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ reply: "Something went wrong" });
+  }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`Server running on http://localhost:${PORT}`)
-);
+/* ===============================
+   6️⃣ SERVER START
+================================ */
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});

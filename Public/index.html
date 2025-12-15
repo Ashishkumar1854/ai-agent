@@ -2,28 +2,45 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Restaurant Agent</title>
+    <title>Restaurant AI Assistant</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+      }
+      #chat {
+        white-space: pre-wrap;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+    </style>
   </head>
   <body>
-    <h1>🍽️ Restaurant AI Agent</h1>
+    <h2>🍽 Restaurant AI Assistant</h2>
 
-    <input id="msg" placeholder="Ask menu..." />
-    <button onclick="send()">Send</button>
+    <input
+      id="userInput"
+      placeholder="Ask: what's for dinner?"
+      style="width: 100%; padding: 8px"
+    />
+    <button onclick="sendMessage()">Send</button>
 
-    <p id="out"></p>
+    <div id="chat"></div>
 
     <script>
-      async function send() {
-        const message = document.getElementById("msg").value;
+      async function sendMessage() {
+        const input = document.getElementById("userInput").value;
 
-        const res = await fetch("/chat", {
+        const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
+          body: JSON.stringify({ message: input }),
         });
 
         const data = await res.json();
-        document.getElementById("out").innerText = data.reply;
+        document.getElementById("chat").innerText = data.reply;
       }
     </script>
   </body>
