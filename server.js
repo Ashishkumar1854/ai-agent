@@ -12,21 +12,21 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ OFFICIAL GOOGLE CLIENT (NO v1beta ISSUE)
+// ✅ OFFICIAL GOOGLE CLIENT
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// GET → HTML
+// GET → HTML api
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// POST → CHAT
+// POST → CHAT api
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    // 🔧 SIMPLE TOOL LOGIC (same as agent)
+    //  SIMPLE TOOL LOGIC
     if (message.toLowerCase().includes("breakfast")) {
       return res.json({ reply: "🍳 Aloo Paratha, Poha, Masala Chai" });
     }
